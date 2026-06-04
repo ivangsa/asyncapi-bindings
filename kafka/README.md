@@ -142,8 +142,8 @@ This object contains information about the operation representation in Kafka (eg
 
 Field Name | Type | Description | Applicability [default] | Constraints
 ---|:---:|:---:|:---:|---
-<a name="operationBindingObjectGroupId"></a>`groupId` | [Schema Object][schemaObject] \| [Reference Object](referenceObject) | Id of the consumer group. | OPTIONAL | -
-<a name="operationBindingObjectClientId"></a>`clientId` | [Schema Object][schemaObject] \| [Reference Object](referenceObject) | Id of the consumer inside a consumer group. | OPTIONAL | -
+<a name="operationBindingObjectGroupId"></a>`groupId` | string \| string[] \| [Schema Object][schemaObject] \| [Reference Object](referenceObject) | Id of the consumer group. | OPTIONAL | String arrays MUST contain at least one unique string
+<a name="operationBindingObjectClientId"></a>`clientId` | string \| string[] \| [Schema Object][schemaObject] \| [Reference Object](referenceObject) | Id of the consumer inside a consumer group. | OPTIONAL | String arrays MUST contain at least one unique string
 <a name="operationBindingObjectPrincipal"></a>`principal` | string | The Kafka principal (e.g. `User:bob`) used to authenticate this operation. Intended for ACL documentation purposes. | OPTIONAL | -
 <a name="operationBindingObjectTransactional"></a>`transactional` | boolean | Marks this producer as transactional. When `true`, the Kafka client MUST be configured with a `transactional.id` at runtime. | OPTIONAL [`false`] — `send` only | MUST NOT be set on `receive` operations
 <a name="operationBindingObjectIsolationLevel"></a>`isolationLevel` | string | Controls the visibility of transactional messages to this consumer. | OPTIONAL [`read_uncommitted`] — `receive` only | MUST be one of `read_uncommitted`, `read_committed`. SHOULD be `read_committed` when consuming from a transactional topic
@@ -162,12 +162,24 @@ operations:
     action: receive
     bindings:
       kafka:
+        groupId: 'myGroupId'
+        clientId:
+          - 'myClientId'
+          - 'myOtherClientId'
+        bindingVersion: '0.6.0'
+```
+
+```yaml
+operations:
+  receivePaymentEvents:
+    action: receive
+    bindings:
+      kafka:
         groupId:
           type: string
-          enum: ['myGroupId']
+          enum: ['payments-consumer-group']
         clientId:
-          type: string
-          enum: ['myClientId']
+          $ref: '#/components/schemas/kafkaClientId'
         bindingVersion: '0.6.0'
 ```
 
